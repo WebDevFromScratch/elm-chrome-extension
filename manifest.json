@@ -1,0 +1,12 @@
+{
+  "name": "NewTabByMe",
+  "description": "Just a silly attempt...",
+  "version": "1.0.0",
+  "manifest_version": 2,
+  "icons": {
+    "128": "icon.png"
+  },
+  "chrome_url_overrides": {
+    "newtab": "my_file.html"
+  }
+}
