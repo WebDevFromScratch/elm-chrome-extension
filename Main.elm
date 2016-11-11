@@ -85,7 +85,6 @@ type alias Model =
 
 initModel : Model
 initModel =
-    -- TODO: consider just also starting with quote equalling to Nothing, and then managing this on the view
     { quote =
         Just
             { id = 0
@@ -118,7 +117,6 @@ update msg model =
             ( { error = Nothing, quote = Just response }, Cmd.none )
 
         Fail error ->
-            -- TODO: in the view, do a "toString" on this error
             ( { error = Just error, quote = Nothing }, Cmd.none )
 
 
@@ -126,9 +124,29 @@ update msg model =
 -- view
 
 
+errorToRender : { b | error : Maybe a } -> String
+errorToRender model =
+    case model.error of
+        Nothing ->
+            "Something went wrong, please contact support."
+
+        Just error ->
+            "We had some troubles fetching a quote for you.. Please try to fetch it once more."
+
+
+mainTextToRender : { c | error : Maybe a, quote : Maybe { b | text : String } } -> String
+mainTextToRender model =
+    case model.quote of
+        Nothing ->
+            errorToRender model
+
+        Just quote ->
+            quote.text
+
+
 view : Model -> Html Msg
 view model =
-    div [] [ text (toString model) ]
+    h3 [] [ text (mainTextToRender model) ]
 
 
 
