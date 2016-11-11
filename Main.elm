@@ -19,7 +19,7 @@ type alias Author =
     }
 
 
-type alias Response =
+type alias Quote =
     { id : Int
     , text : String
     , category : Category
@@ -41,9 +41,9 @@ authorDecoder =
         ("name" := string)
 
 
-responseDecoder : Decoder Response
+responseDecoder : Decoder Quote
 responseDecoder =
-    object4 Response
+    object4 Quote
         ("id" := int)
         ("text" := string)
         ("category" := categoryDecoder)
@@ -61,7 +61,7 @@ randomQuote =
             Http.get responseDecoder url
 
         cmd =
-            Task.perform Fail Quote task
+            Task.perform Fail QuoteMsg task
     in
         cmd
 
@@ -71,12 +71,16 @@ randomQuote =
 
 
 type alias Model =
-    String
+    Quote
 
 
 initModel : Model
 initModel =
-    "Fetching a quote.."
+    { id = 0
+    , text = "Fetching your quote..."
+    , author = { id = 0, name = "Fetching your quote..." }
+    , category = { id = 0, name = "Fetching your quote..." }
+    }
 
 
 init : ( Model, Cmd Msg )
@@ -89,18 +93,20 @@ init =
 
 
 type Msg
-    = Quote Response
+    = QuoteMsg Quote
     | Fail Http.Error
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Quote response ->
-            ( toString (response.id) ++ " " ++ response.text, Cmd.none )
+        QuoteMsg response ->
+            ( response, Cmd.none )
 
         Fail error ->
-            ( (toString error), Cmd.none )
+            -- TODO: eventually, we need to show error somewhere, maybe add yet another field to model (error: string)
+            -- ( (toString error), Cmd.none )
+            ( model, Cmd.none )
 
 
 
@@ -109,7 +115,7 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div [] [ text model ]
+    div [] [ text (toString model) ]
 
 
 
