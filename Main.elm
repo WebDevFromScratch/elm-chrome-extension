@@ -7,24 +7,7 @@ import Json.Decode exposing (..)
 import Html.App as App
 
 
-type alias Category =
-    { id : Int
-    , name : String
-    }
-
-
-type alias Author =
-    { id : Int
-    , name : String
-    }
-
-
-type alias Quote =
-    { id : Int
-    , text : String
-    , category : Category
-    , author : Author
-    }
+-- decoders
 
 
 categoryDecoder : Decoder Category
@@ -70,16 +53,47 @@ randomQuote =
 -- model
 
 
+type alias Category =
+    { id : Int
+    , name : String
+    }
+
+
+type alias Author =
+    { id : Int
+    , name : String
+    }
+
+
+type alias Quote =
+    { id : Int
+    , text : String
+    , category : Category
+    , author : Author
+    }
+
+
+type alias Error =
+    Http.Error
+
+
 type alias Model =
-    Quote
+    { quote : Maybe Quote
+    , error : Maybe Error
+    }
 
 
 initModel : Model
 initModel =
-    { id = 0
-    , text = "Fetching your quote..."
-    , author = { id = 0, name = "Fetching your quote..." }
-    , category = { id = 0, name = "Fetching your quote..." }
+    -- TODO: consider just also starting with quote equalling to Nothing, and then managing this on the view
+    { quote =
+        Just
+            { id = 0
+            , text = "Fetching your quote..."
+            , author = { id = 0, name = "Fetching your quote..." }
+            , category = { id = 0, name = "Fetching your quote..." }
+            }
+    , error = Nothing
     }
 
 
@@ -101,12 +115,11 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         QuoteMsg response ->
-            ( response, Cmd.none )
+            ( { error = Nothing, quote = Just response }, Cmd.none )
 
         Fail error ->
-            -- TODO: eventually, we need to show error somewhere, maybe add yet another field to model (error: string)
-            -- ( (toString error), Cmd.none )
-            ( model, Cmd.none )
+            -- TODO: in the view, do a "toString" on this error
+            ( { error = Just error, quote = Nothing }, Cmd.none )
 
 
 
