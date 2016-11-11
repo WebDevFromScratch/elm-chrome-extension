@@ -1,88 +1,106 @@
 module Main exposing (..)
 
-import Random exposing (int)
-import Array exposing (get, fromList)
 import Html exposing (..)
+import Task
+import Http
+import Json.Decode exposing (..)
 import Html.App as App
+
+
+type alias Category =
+    { id : Int
+    , name : String
+    }
+
+
+type alias Author =
+    { id : Int
+    , name : String
+    }
+
+
+type alias Response =
+    { id : Int
+    , text : String
+    , category : Category
+    , author : Author
+    }
+
+
+categoryDecoder : Decoder Category
+categoryDecoder =
+    object2 Category
+        ("id" := int)
+        ("name" := string)
+
+
+authorDecoder : Decoder Author
+authorDecoder =
+    object2 Author
+        ("id" := int)
+        ("name" := string)
+
+
+responseDecoder : Decoder Response
+responseDecoder =
+    object4 Response
+        ("id" := int)
+        ("text" := string)
+        ("category" := categoryDecoder)
+        ("author" := authorDecoder)
+        |> at [ "quote" ]
+
+
+randomQuote : Cmd Msg
+randomQuote =
+    let
+        url =
+            "http://localhost:4000/api/quotes/random"
+
+        task =
+            Http.get responseDecoder url
+
+        cmd =
+            Task.perform Fail Quote task
+    in
+        cmd
+
 
 
 -- model
 
 
 type alias Model =
-    { quote : Quote
-    }
-
-
-type alias Quote =
-    -- quote will also need to have an id here
-    { text : String
-    , author : String
-    , genre : String
-    }
-
-
-quotes : List Quote
-quotes =
-    [ { text = "It's all about the money!"
-      , author = "Meja"
-      , genre = "music"
-      }
-    , { text = "I love tacos and burritos"
-      , author = "Jennifer Lopez (Eric Cartman)"
-      , genre = "funny"
-      }
-    ]
+    String
 
 
 initModel : Model
 initModel =
-    { quote =
-        { text = "Awaiting your quote..."
-        , author = ""
-        , genre = ""
-        }
-    }
+    "Fetching a quote.."
+
+
+init : ( Model, Cmd Msg )
+init =
+    ( initModel, randomQuote )
 
 
 
 -- update
 
 
-type alias Msg =
-    String
+type Msg
+    = Quote Response
+    | Fail Http.Error
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    model
+    case msg of
+        Quote response ->
+            ( toString (response.id) ++ " " ++ response.text, Cmd.none )
 
-
-
--- fetch
-
-
-fetchQuote : Model -> Model
-fetchQuote model =
-    -- there will be a call to API here, for fetching a quote, the current logic is temporary
-    -- seems like it will be easier to write the backend first..
-    let
-        generator =
-            Random.int 0 100
-
-        seed0 =
-            Random.int 0 100
-
-        -- Random.initialSeed 31415
-        n =
-            Random.generate generator seed0
-
-        -- Random.generate (int 0 (List.length quotes)) seed0
-        -- Random.Generator a Random.int 0 (List.length quotes)
-        -- newQuote =
-        -- Array.get n (Array.fromList quotes)
-    in
-        model
+        Fail error ->
+            ( (toString error), Cmd.none )
 
 
 
@@ -91,15 +109,23 @@ fetchQuote model =
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ h1 [] [ text "YO!" ]
-        ]
+    div [] [ text model ]
+
+
+
+-- subscription
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.none
 
 
 main : Program Never
 main =
-    App.beginnerProgram
-        { model = initModel
+    App.program
+        { init = init
         , update = update
         , view = view
+        , subscriptions = subscriptions
         }
