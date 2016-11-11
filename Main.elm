@@ -124,29 +124,36 @@ update msg model =
 -- view
 
 
-errorToRender : { b | error : Maybe a } -> String
-errorToRender model =
-    case model.error of
-        Nothing ->
-            "Something went wrong, please contact support."
+contentToRenderForError : { b | error : Maybe a } -> Html c
+contentToRenderForError model =
+    let
+        errorText =
+            case model.error of
+                Nothing ->
+                    "Something unexpected happened, please contact support."
 
-        Just error ->
-            "We had some troubles fetching a quote for you.. Please try to fetch it once more."
+                Just error ->
+                    "We had some troubles fetching a quote for you.. Please try to fetch it once more."
+    in
+        h3 [] [ text errorText ]
 
 
-mainTextToRender : { c | error : Maybe a, quote : Maybe { b | text : String } } -> String
-mainTextToRender model =
+contentToRenderForResponse : { d | error : Maybe a, quote : Maybe { c | author : { b | name : String }, text : String } } -> Html e
+contentToRenderForResponse model =
     case model.quote of
         Nothing ->
-            errorToRender model
+            contentToRenderForError model
 
         Just quote ->
-            quote.text
+            div []
+                [ h3 [] [ text quote.text ]
+                , p [] [ text quote.author.name ]
+                ]
 
 
 view : Model -> Html Msg
 view model =
-    h3 [] [ text (mainTextToRender model) ]
+    contentToRenderForResponse model
 
 
 
