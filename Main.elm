@@ -147,7 +147,8 @@ update msg model =
 
 contentToRenderForLoading model =
     div [ class "content" ]
-        [ h1 [ class "ti-reload" ] [] ]
+        -- [ h1 [ class "ti-reload" ] [] ]
+        [ h1 [] [] ]
 
 
 contentToRenderForError : { b | error : Maybe a } -> Html c
@@ -177,15 +178,7 @@ contentToRenderForResponse model =
 
                 Just quote ->
                     div
-                        (Animation.render model.style
-                            ++ [ class "content"
-                               , style
-                                    [ ( "position", "absolute" )
-                                    , ( "border-style", "dotted" )
-                                    ]
-                               ]
-                        )
-                        -- [ class "content" ]
+                        [ class "content" ]
                         [ h1 [] [ text quote.text ]
                         , h3 [] [ text quote.author.name ]
                         , div
