@@ -7,6 +7,7 @@ import Task
 import Http
 import Json.Decode exposing (..)
 import Html.App as App
+import Animation exposing (px)
 
 
 -- decoders
@@ -82,22 +83,29 @@ type alias Error =
 type alias Model =
     { quote : Maybe Quote
     , error : Maybe Error
+    , loading : Bool
+    , style : Animation.State
     }
 
 
-fetchingQuote =
+emptyQuote =
     { id = 0
-    , text = "Fetching your quote..."
-    , author = { id = 0, name = "Fetching your quote..." }
-    , category = { id = 0, name = "Fetching your quote..." }
+    , text = ""
+    , author = { id = 0, name = "" }
+    , category = { id = 0, name = "" }
     }
 
 
 initModel : Model
 initModel =
     { quote =
-        Just fetchingQuote
+        Just emptyQuote
     , error = Nothing
+    , loading = True
+    , style =
+        Animation.style
+            [ Animation.opacity 1.0
+            ]
     }
 
 
@@ -114,23 +122,32 @@ type Msg
     = QuoteMsg Quote
     | Fail Http.Error
     | NewQuote
+    | Animate Animation.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         QuoteMsg response ->
-            ( { error = Nothing, quote = Just response }, Cmd.none )
+            ( { model | error = Nothing, quote = Just response, loading = False }, Cmd.none )
 
         Fail error ->
-            ( { error = Just error, quote = Nothing }, Cmd.none )
+            ( { model | error = Just error, quote = Nothing, loading = False }, Cmd.none )
 
         NewQuote ->
-            ( { error = Nothing, quote = Just fetchingQuote }, randomQuote )
+            ( { model | error = Nothing, quote = Just emptyQuote, loading = True }, randomQuote )
+
+        Animate animMsg ->
+            ( { model | style = Animation.update animMsg model.style }, Cmd.none )
 
 
 
 -- view
+
+
+contentToRenderForLoading model =
+    div [ class "content" ]
+        [ h1 [ class "ti-reload" ] [] ]
 
 
 contentToRenderForError : { b | error : Maybe a } -> Html c
@@ -144,25 +161,39 @@ contentToRenderForError model =
                 Just error ->
                     "We had some troubles fetching a quote for you.. Please try to fetch it once more."
     in
-        h1 [] [ text errorText ]
+        div [ class "content" ]
+            [ h1 [] [ text errorText ] ]
 
 
-contentToRenderForResponse : { d | error : Maybe a, quote : Maybe { c | author : { b | name : String }, text : String } } -> Html Msg
 contentToRenderForResponse model =
-    case model.quote of
-        Nothing ->
-            contentToRenderForError model
+    case model.loading of
+        True ->
+            contentToRenderForLoading model
 
-        Just quote ->
-            div [ class "content" ]
-                [ h1 [] [ text quote.text ]
-                , h3 [] [ text quote.author.name ]
-                , div
-                    [ class "buttons-wrapper margin-top-md" ]
-                    [ button [ class "button" ] [ span [ class "ti-heart" ] [] ]
-                    , button [ class "button", onClick NewQuote ] [ span [ class "ti-reload" ] [] ]
-                    ]
-                ]
+        False ->
+            case model.quote of
+                Nothing ->
+                    contentToRenderForError model
+
+                Just quote ->
+                    div
+                        (Animation.render model.style
+                            ++ [ class "content"
+                               , style
+                                    [ ( "position", "absolute" )
+                                    , ( "border-style", "dotted" )
+                                    ]
+                               ]
+                        )
+                        -- [ class "content" ]
+                        [ h1 [] [ text quote.text ]
+                        , h3 [] [ text quote.author.name ]
+                        , div
+                            [ class "buttons-wrapper margin-top-md" ]
+                            [ button [ class "button" ] [ span [ class "ti-heart" ] [] ]
+                            , button [ class "button", onClick NewQuote ] [ span [ class "ti-reload" ] [] ]
+                            ]
+                        ]
 
 
 view : Model -> Html Msg
@@ -176,7 +207,7 @@ view model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    Animation.subscription Animate [ model.style ]
 
 
 main : Program Never

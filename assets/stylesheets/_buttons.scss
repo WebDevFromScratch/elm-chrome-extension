@@ -12,6 +12,7 @@
   border-radius: 4px;
   font-size: 1.2em;
   margin: 0 0.2em;
+  transition: all 200ms ease;
 
   &:hover {
     background-color: $color-creamy;
