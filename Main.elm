@@ -1,6 +1,7 @@
 module Main exposing (..)
 
 import Html exposing (..)
+import Html.Attributes exposing (..)
 import Task
 import Http
 import Json.Decode exposing (..)
@@ -135,7 +136,7 @@ contentToRenderForError model =
                 Just error ->
                     "We had some troubles fetching a quote for you.. Please try to fetch it once more."
     in
-        h3 [] [ text errorText ]
+        h1 [] [ text errorText ]
 
 
 contentToRenderForResponse : { d | error : Maybe a, quote : Maybe { c | author : { b | name : String }, text : String } } -> Html e
@@ -145,9 +146,9 @@ contentToRenderForResponse model =
             contentToRenderForError model
 
         Just quote ->
-            div []
-                [ h3 [] [ text quote.text ]
-                , p [] [ text quote.author.name ]
+            div [ class "content" ]
+                [ h1 [] [ text quote.text ]
+                , h3 [] [ text quote.author.name ]
                 ]
 
 
