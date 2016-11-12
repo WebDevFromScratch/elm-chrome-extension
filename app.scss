@@ -1,0 +1,45 @@
+@import url('https://fonts.googleapis.com/css?family=Alegreya:400,400i,700,700i,900,900i|Roboto:100,100i,300,300i,400,400i,500,500i,700,700i,900,900i');
+
+.body {
+  margin: 0 !important;
+  padding: 0 !important;
+  height: 100%;
+  font-size: 12px;
+}
+
+@media (min-width: 481px) {
+  .body {
+    font-size: 14px;
+  }
+}
+
+@media (min-width: 737px) {
+  .body {
+    font-size: 16px;
+  }
+}
+
+h1, h2 {
+  font-family: Alegreya, "Times New Roman", serif;
+  font-style: italic;
+  font-weight: 400;
+}
+
+h3, h4 {
+  font-family: Roboto, "Arial", sans-serif;
+  font-weight: 700;
+}
+
+.wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  background-color: #2980B9;
+}
+
+.content {
+  max-width: 800px;
+  padding: 16px;
+  color: #ECF0F1;
+}
