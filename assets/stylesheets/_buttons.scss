@@ -1,0 +1,21 @@
+@import "colors";
+
+.buttons-wrapper {
+  text-align: center;
+}
+
+.button {
+  padding: 0.6em 1.4em;
+  background-color: inherit;
+  border: 1px solid $color-creamy;
+  color: $color-creamy;
+  border-radius: 4px;
+  font-size: 1.2em;
+  margin: 0 0.2em;
+
+  &:hover {
+    background-color: $color-creamy;
+    color: $color-blue;
+    cursor: pointer;
+  }
+}

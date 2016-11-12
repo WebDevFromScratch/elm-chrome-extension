@@ -1,4 +1,6 @@
-@import url('https://fonts.googleapis.com/css?family=Alegreya:400,400i,700,700i,900,900i|Roboto:100,100i,300,300i,400,400i,500,500i,700,700i,900,900i');
+@import "colors";
+
+$margin-md: 1.5em;
 
 .body {
   margin: 0 !important;
@@ -35,11 +37,15 @@ h3, h4 {
   justify-content: center;
   align-items: center;
   height: 100%;
-  background-color: #2980B9;
+  background-color: $color-blue;
 }
 
 .content {
   max-width: 800px;
   padding: 16px;
-  color: #ECF0F1;
+  color: $color-creamy;
+}
+
+.margin-top-md {
+  margin-top: $margin-md;
 }

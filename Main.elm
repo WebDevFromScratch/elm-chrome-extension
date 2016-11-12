@@ -149,6 +149,11 @@ contentToRenderForResponse model =
             div [ class "content" ]
                 [ h1 [] [ text quote.text ]
                 , h3 [] [ text quote.author.name ]
+                , div
+                    [ class "buttons-wrapper margin-top-md" ]
+                    [ button [ class "button" ] [ span [ class "ti-heart" ] [] ]
+                    , button [ class "button" ] [ span [ class "ti-reload" ] [] ]
+                    ]
                 ]
 
 
