@@ -2,6 +2,7 @@ module Main exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Html.Events exposing (..)
 import Task
 import Http
 import Json.Decode exposing (..)
@@ -84,15 +85,18 @@ type alias Model =
     }
 
 
+fetchingQuote =
+    { id = 0
+    , text = "Fetching your quote..."
+    , author = { id = 0, name = "Fetching your quote..." }
+    , category = { id = 0, name = "Fetching your quote..." }
+    }
+
+
 initModel : Model
 initModel =
     { quote =
-        Just
-            { id = 0
-            , text = "Fetching your quote..."
-            , author = { id = 0, name = "Fetching your quote..." }
-            , category = { id = 0, name = "Fetching your quote..." }
-            }
+        Just fetchingQuote
     , error = Nothing
     }
 
@@ -109,6 +113,7 @@ init =
 type Msg
     = QuoteMsg Quote
     | Fail Http.Error
+    | NewQuote
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -119,6 +124,9 @@ update msg model =
 
         Fail error ->
             ( { error = Just error, quote = Nothing }, Cmd.none )
+
+        NewQuote ->
+            ( { error = Nothing, quote = Just fetchingQuote }, randomQuote )
 
 
 
@@ -139,7 +147,7 @@ contentToRenderForError model =
         h1 [] [ text errorText ]
 
 
-contentToRenderForResponse : { d | error : Maybe a, quote : Maybe { c | author : { b | name : String }, text : String } } -> Html e
+contentToRenderForResponse : { d | error : Maybe a, quote : Maybe { c | author : { b | name : String }, text : String } } -> Html Msg
 contentToRenderForResponse model =
     case model.quote of
         Nothing ->
@@ -152,7 +160,7 @@ contentToRenderForResponse model =
                 , div
                     [ class "buttons-wrapper margin-top-md" ]
                     [ button [ class "button" ] [ span [ class "ti-heart" ] [] ]
-                    , button [ class "button" ] [ span [ class "ti-reload" ] [] ]
+                    , button [ class "button", onClick NewQuote ] [ span [ class "ti-reload" ] [] ]
                     ]
                 ]
 
