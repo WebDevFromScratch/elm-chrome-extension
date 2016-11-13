@@ -13,6 +13,14 @@ import Animation exposing (px)
 -- decoders
 
 
+likeResponseDecoder : Decoder Like
+likeResponseDecoder =
+    object2 Like
+        ("id" := int)
+        ("quote_id" := int)
+        |> at [ "like" ]
+
+
 categoryDecoder : Decoder Category
 categoryDecoder =
     object2 Category
@@ -52,8 +60,36 @@ randomQuote =
         cmd
 
 
+likeQuote : Model -> Cmd Msg
+likeQuote model =
+    let
+        url =
+            "http://localhost:4000/api/likes"
+
+        task =
+            Http.send Http.defaultSettings
+                { verb = "POST"
+                , headers =
+                    [ ( "Content-Type", "application/json" )
+                    ]
+                , url = url
+                , body = Http.string """{ "like": { "quote_id": 124 } }"""
+                }
+
+        cmd =
+            Task.perform Fail LikeMsg (Http.fromJson likeResponseDecoder task)
+    in
+        cmd
+
+
 
 -- model
+
+
+type alias Like =
+    { id : Int
+    , quote_id : Int
+    }
 
 
 type alias Category =
@@ -120,8 +156,10 @@ init =
 
 type Msg
     = QuoteMsg Quote
+    | LikeMsg Like
     | Fail Http.Error
     | NewQuote
+    | LikeQuote
     | Animate Animation.Msg
 
 
@@ -131,11 +169,18 @@ update msg model =
         QuoteMsg response ->
             ( { model | error = Nothing, quote = Just response, loading = False }, Cmd.none )
 
+        LikeMsg response ->
+            -- sth should be added, possibly to state I guess, to let know that the quote has been liked
+            ( model, Cmd.none )
+
         Fail error ->
             ( { model | error = Just error, quote = Nothing, loading = False }, Cmd.none )
 
         NewQuote ->
             ( { model | error = Nothing, quote = Just emptyQuote, loading = True }, randomQuote )
+
+        LikeQuote ->
+            ( model, likeQuote model )
 
         Animate animMsg ->
             ( { model | style = Animation.update animMsg model.style }, Cmd.none )
@@ -183,7 +228,7 @@ contentToRenderForResponse model =
                         , h3 [] [ text quote.author.name ]
                         , div
                             [ class "buttons-wrapper margin-top-md" ]
-                            [ button [ class "button" ] [ span [ class "ti-heart" ] [] ]
+                            [ button [ class "button", onClick LikeQuote ] [ span [ class "ti-heart" ] [] ]
                             , button [ class "button", onClick NewQuote ] [ span [ class "ti-reload" ] [] ]
                             ]
                         ]
